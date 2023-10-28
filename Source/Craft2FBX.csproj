@@ -18,7 +18,7 @@
     <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;FBXSDK_RUNTIME</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -26,7 +26,7 @@
     <DebugType>portable</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;FBXSDK_RUNTIME</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -70,7 +70,127 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="com.autodesk.fbx\EFbxMemoryClearMode.cs" />
+    <Compile Include="com.autodesk.fbx\EFbxType.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAMatrix.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimCurve.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimCurveBase.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimCurveDef.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimCurveFilterUnroll.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimCurveKey.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimCurveNode.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimLayer.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAnimStack.cs" />
+    <Compile Include="com.autodesk.fbx\FbxAxisSystem.cs" />
+    <Compile Include="com.autodesk.fbx\FbxBindingTable.cs" />
+    <Compile Include="com.autodesk.fbx\FbxBindingTableBase.cs" />
+    <Compile Include="com.autodesk.fbx\FbxBindingTableEntry.cs" />
+    <Compile Include="com.autodesk.fbx\FbxBlendShape.cs" />
+    <Compile Include="com.autodesk.fbx\FbxBlendShapeChannel.cs" />
+    <Compile Include="com.autodesk.fbx\FbxCamera.cs" />
+    <Compile Include="com.autodesk.fbx\FbxCluster.cs" />
+    <Compile Include="com.autodesk.fbx\FbxCollection.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConnection.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConstraint.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConstraintAim.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConstraintParent.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConstraintPosition.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConstraintRotation.cs" />
+    <Compile Include="com.autodesk.fbx\FbxConstraintScale.cs" />
+    <Compile Include="com.autodesk.fbx\FbxDataType.cs" />
+    <Compile Include="com.autodesk.fbx\FbxDeformer.cs" />
+    <Compile Include="com.autodesk.fbx\FbxDocument.cs" />
+    <Compile Include="com.autodesk.fbx\FbxDocumentInfo.cs" />
+    <Compile Include="com.autodesk.fbx\FbxDouble4x4.cs" />
+    <Compile Include="com.autodesk.fbx\FbxDoubleTemplates.cs" />
+    <Compile Include="com.autodesk.fbx\FbxEmitter.cs" />
+    <Compile Include="com.autodesk.fbx\FbxEntryView.cs" />
+    <Compile Include="com.autodesk.fbx\FbxEuler.cs" />
+    <Compile Include="com.autodesk.fbx\FbxExporter.cs" />
+    <Compile Include="com.autodesk.fbx\FbxFileTexture.cs" />
+    <Compile Include="com.autodesk.fbx\FbxGeometry.cs" />
+    <Compile Include="com.autodesk.fbx\FbxGeometryBase.cs" />
+    <Compile Include="com.autodesk.fbx\FbxGlobalSettings.cs" />
+    <Compile Include="com.autodesk.fbx\FbxImplementation.cs" />
+    <Compile Include="com.autodesk.fbx\FbxImporter.cs" />
+    <Compile Include="com.autodesk.fbx\FbxIOBase.cs" />
+    <Compile Include="com.autodesk.fbx\FbxIOFileHeaderInfo.cs" />
+    <Compile Include="com.autodesk.fbx\FbxIOPluginRegistry.cs" />
+    <Compile Include="com.autodesk.fbx\FbxIOSettings.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayer.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerContainer.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElement.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementArray.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementArrayTemplateFbxColor.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementArrayTemplateFbxSurfaceMaterial.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementArrayTemplateFbxVector2.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementArrayTemplateFbxVector4.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementArrayTemplateInt.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementBinormal.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementMaterial.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementNormal.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementTangent.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementTemplateFbxColor.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementTemplateFbxSurfaceMaterial.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementTemplateFbxVector2.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementTemplateFbxVector4.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementUV.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLayerElementVertexColor.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLight.cs" />
+    <Compile Include="com.autodesk.fbx\FbxLimits.cs" />
+    <Compile Include="com.autodesk.fbx\FbxManager.cs" />
+    <Compile Include="com.autodesk.fbx\FbxMarker.cs" />
+    <Compile Include="com.autodesk.fbx\FbxMatrix.cs" />
+    <Compile Include="com.autodesk.fbx\FbxMesh.cs" />
+    <Compile Include="com.autodesk.fbx\FbxNode.cs" />
+    <Compile Include="com.autodesk.fbx\FbxNodeAttribute.cs" />
+    <Compile Include="com.autodesk.fbx\FbxNull.cs" />
+    <Compile Include="com.autodesk.fbx\FbxNurbsCurve.cs" />
+    <Compile Include="com.autodesk.fbx\FbxObject.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPose.cs" />
+    <Compile Include="com.autodesk.fbx\FbxProperty.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyBool.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyDouble.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyDouble3.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEAreaLightShape.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEBlendMode.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEDecayType.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEGateFit.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEInheritType.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyELightType.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEntryView.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEProjectionType.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyEWrapMode.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyFlags.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyFloat.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyInt.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyMarkerELook.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyNullELook.cs" />
+    <Compile Include="com.autodesk.fbx\FbxPropertyString.cs" />
+    <Compile Include="com.autodesk.fbx\FbxQuaternion.cs" />
+    <Compile Include="com.autodesk.fbx\FbxScene.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSemanticEntryView.cs" />
+    <Compile Include="com.autodesk.fbx\FbxShape.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSharpProgressCallback.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSkeleton.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSkin.cs" />
+    <Compile Include="com.autodesk.fbx\FbxStatus.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSubDeformer.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSurfaceLambert.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSurfaceMaterial.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSurfacePhong.cs" />
+    <Compile Include="com.autodesk.fbx\FbxSystemUnit.cs" />
+    <Compile Include="com.autodesk.fbx\FbxTexture.cs" />
+    <Compile Include="com.autodesk.fbx\FbxTime.cs" />
+    <Compile Include="com.autodesk.fbx\FbxTimeSpan.cs" />
+    <Compile Include="com.autodesk.fbx\FbxTransform.cs" />
+    <Compile Include="com.autodesk.fbx\Globals.cs" />
+    <Compile Include="com.autodesk.fbx\NativeMethods.cs" />
     <Compile Include="Craft2FBXAddon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="com.autodesk.fbx\LICENSE.md" />
+    <None Include="com.autodesk.fbx\Third Party Notices.md" />
   </ItemGroup>
 </Project>
