@@ -190,6 +190,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="com.autodesk.fbx\LICENSE.md" />
     <None Include="com.autodesk.fbx\Third Party Notices.md" />
   </ItemGroup>
