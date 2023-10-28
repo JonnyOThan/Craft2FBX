@@ -68,6 +68,9 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="C:\Program Files (x86)\Steam\steamapps\common\KSP Stripped\Gamedata\001_ToolbarControl\Plugins\ToolbarControl.dll">
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="com.autodesk.fbx\EFbxMemoryClearMode.cs" />
