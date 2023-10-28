@@ -11,7 +11,8 @@ namespace UnityEditor
 	{
 		public static string GetAssetPath(Texture texture)
 		{
-			return null;
+			var textureInfo = GameDatabase.Instance.GetTextureInfo(texture.name);
+			return textureInfo != null ? textureInfo.file.fullPath : string.Empty;
 		}
 	}
 

@@ -36,7 +36,7 @@ namespace Craft2FBX
 
 				if (craftRoot != null)
 				{
-					exporter.ExportAll(new[] { craftRoot.gameObject });
+					exporter.ExportAll(new[] { craftRoot.gameObject }, Path.Combine(KSPUtil.ApplicationRootPath, "test.fbx"));
 				}
 			}
 		}

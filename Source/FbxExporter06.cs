@@ -201,7 +201,7 @@ namespace Autodesk.Fbx.Examples
 			/// </summary>
 			public void ExportMesh(MeshInfo meshInfo, FbxNode fbxNode, FbxScene fbxScene)
 			{
-				if (!meshInfo.IsValid)
+				if (!meshInfo.IsValid )
 					return;
 
 				NumMeshes++;
@@ -225,8 +225,11 @@ namespace Autodesk.Fbx.Examples
 
 				ExportUVs(meshInfo, fbxMesh);
 
-				var fbxMaterial = ExportMaterial(meshInfo.Material, fbxScene);
-				fbxNode.AddMaterial(fbxMaterial);
+				if (meshInfo.Material)
+				{
+					var fbxMaterial = ExportMaterial(meshInfo.Material, fbxScene);
+					fbxNode.AddMaterial(fbxMaterial);
+				}
 
 				/* Triangles have to be added in reverse order, 
                  * or else they will be inverted on import 
@@ -299,7 +302,7 @@ namespace Autodesk.Fbx.Examples
 			/// Export all the objects in the set.
 			/// Return the number of objects in the set that we exported.
 			/// </summary>
-			public int ExportAll(IEnumerable<UnityEngine.Object> unityExportSet)
+			public int ExportAll(IEnumerable<UnityEngine.Object> unityExportSet, string fileName)
 			{
 				Verbose = true;
 
@@ -316,8 +319,8 @@ namespace Autodesk.Fbx.Examples
 					var fbxExporter = FbxExporter.Create(fbxManager, "Exporter");
 
 					// Initialize the exporter.
-					int fileFormat = fbxManager.GetIOPluginRegistry().FindWriterIDByDescription("FBX ascii (*.fbx)");
-					bool status = fbxExporter.Initialize(LastFilePath, fileFormat, fbxManager.GetIOSettings());
+					int fileFormat = fbxManager.GetIOPluginRegistry().FindWriterIDByDescription("FBX binary (*.fbx)");
+					bool status = fbxExporter.Initialize(fileName, fileFormat, fbxManager.GetIOSettings());
 					// Check that initialization of the fbxExporter was successful
 					if (!status)
 						return 0;
@@ -562,23 +565,24 @@ namespace Autodesk.Fbx.Examples
 			private MeshInfo GetMeshInfo(GameObject gameObject, bool requireRenderer = true)
 			{
 				// Two possibilities: it's a skinned mesh, or we have a mesh filter.
-				Mesh mesh;
-				var meshFilter = gameObject.GetComponent<MeshFilter>();
-				if (meshFilter)
+				Mesh mesh = null;
+
+				if (gameObject.activeInHierarchy)
 				{
-					mesh = meshFilter.sharedMesh;
-				}
-				else
-				{
-					var renderer = gameObject.GetComponent<SkinnedMeshRenderer>();
-					if (!renderer)
+					var meshFilter = gameObject.GetComponent<MeshFilter>();
+					var meshRenderer = gameObject.GetComponent<MeshRenderer>();
+					if (meshFilter && ((meshRenderer && meshRenderer.enabled || !requireRenderer)))
 					{
-						mesh = null;
+						mesh = meshFilter.sharedMesh;
 					}
 					else
 					{
-						mesh = new Mesh();
-						renderer.BakeMesh(mesh);
+						var renderer = gameObject.GetComponent<SkinnedMeshRenderer>();
+						if (renderer && renderer.enabled || !requireRenderer)
+						{
+							mesh = new Mesh();
+							renderer.BakeMesh(mesh);
+						}
 					}
 				}
 				if (!mesh)
