@@ -67,6 +67,9 @@
     <Reference Include="$(ManagedPath)\UnityEngine.CoreModule.dll">
       <Private>false</Private>
     </Reference>
+    <Reference Include="$(ManagedPath)\UnityEngine.UI.dll">
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="C:\Program Files (x86)\Steam\steamapps\common\KSP Stripped\Gamedata\001_ToolbarControl\Plugins\ToolbarControl.dll">
       <Private>false</Private>
@@ -190,6 +193,8 @@
     <Compile Include="com.autodesk.fbx\Globals.cs" />
     <Compile Include="com.autodesk.fbx\NativeMethods.cs" />
     <Compile Include="Craft2FBXAddon.cs" />
+    <Compile Include="FbxExporter06.cs" />
+    <Compile Include="EditorStubs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
