@@ -95,6 +95,8 @@ namespace Autodesk.Fbx.Examples
 					var fbxTexture = FbxFileTexture.Create(fbxMaterial, unityTexture.name);
 					fbxTexture.SetFileName(textureSourceFullPath);
 					fbxTexture.SetTextureUse(unityPropName == "_BumpMap" ? FbxTexture.ETextureUse.eBumpNormalMap : FbxTexture.ETextureUse.eStandard);
+					fbxTexture.SetAlphaSource(FbxTexture.EAlphaSource.eNone);
+					fbxTexture.SetDefaultAlpha(1.0);
 					fbxTexture.SetMappingType(FbxTexture.EMappingType.eUV);
 					if (textureSourceFullPath.EndsWith(".dds", StringComparison.InvariantCultureIgnoreCase))
 					{
@@ -150,6 +152,7 @@ namespace Autodesk.Fbx.Examples
 					fbxMaterial.EmissiveFactor.Set(0);
 				}
 				fbxMaterial.Ambient.Set(new FbxDouble3());
+				fbxMaterial.TransparencyFactor.Set(1);
 				//fbxMaterial.BumpFactor.Set(unityMaterial ? unityMaterial.GetFloat("_BumpScale") : 0);
 				if (specular)
 				{
