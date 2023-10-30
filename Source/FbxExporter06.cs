@@ -141,7 +141,14 @@ namespace Autodesk.Fbx.Examples
 
 				// Copy the flat colours over from Unity standard materials to FBX.
 				fbxMaterial.Diffuse.Set(GetMaterialColor(unityMaterial, "_Color"));
-				fbxMaterial.Emissive.Set(GetMaterialColor(unityMaterial, "_EmissiveColor"));
+				if (unityMaterial.HasProperty("_EmissiveColor"))
+				{
+					fbxMaterial.Emissive.Set(GetMaterialColor(unityMaterial, "_EmissiveColor"));
+				}
+				else
+				{
+					fbxMaterial.EmissiveFactor.Set(0);
+				}
 				fbxMaterial.Ambient.Set(new FbxDouble3());
 				//fbxMaterial.BumpFactor.Set(unityMaterial ? unityMaterial.GetFloat("_BumpScale") : 0);
 				if (specular)
