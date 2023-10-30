@@ -96,6 +96,10 @@ namespace Autodesk.Fbx.Examples
 					fbxTexture.SetFileName(textureSourceFullPath);
 					fbxTexture.SetTextureUse(FbxTexture.ETextureUse.eStandard);
 					fbxTexture.SetMappingType(FbxTexture.EMappingType.eUV);
+					if (textureSourceFullPath.EndsWith(".dds", StringComparison.InvariantCultureIgnoreCase))
+					{
+						fbxTexture.SetScale(1, -1);
+					}
 					TextureMap.Add(textureSourceFullPath, fbxTexture);
 				}
 				TextureMap[textureSourceFullPath].ConnectDstProperty(fbxMaterialProperty);
@@ -137,9 +141,9 @@ namespace Autodesk.Fbx.Examples
 
 				// Copy the flat colours over from Unity standard materials to FBX.
 				fbxMaterial.Diffuse.Set(GetMaterialColor(unityMaterial, "_Color"));
-				fbxMaterial.Emissive.Set(GetMaterialColor(unityMaterial, "_EmissionColor"));
+				fbxMaterial.Emissive.Set(GetMaterialColor(unityMaterial, "_EmissiveColor"));
 				fbxMaterial.Ambient.Set(new FbxDouble3());
-				fbxMaterial.BumpFactor.Set(unityMaterial ? unityMaterial.GetFloat("_BumpScale") : 0);
+				//fbxMaterial.BumpFactor.Set(unityMaterial ? unityMaterial.GetFloat("_BumpScale") : 0);
 				if (specular)
 				{
 					(fbxMaterial as FbxSurfacePhong).Specular.Set(GetMaterialColor(unityMaterial, "_SpecColor"));
@@ -147,11 +151,11 @@ namespace Autodesk.Fbx.Examples
 
 				// Export the textures from Unity standard materials to FBX.
 				ExportTexture(unityMaterial, "_MainTex", fbxMaterial, FbxSurfaceMaterial.sDiffuse);
-				ExportTexture(unityMaterial, "_EmissionMap", fbxMaterial, "emissive");
+				ExportTexture(unityMaterial, "_Emissive", fbxMaterial, "emissive");
 				ExportTexture(unityMaterial, "_BumpMap", fbxMaterial, FbxSurfaceMaterial.sNormalMap);
 				if (specular)
 				{
-					ExportTexture(unityMaterial, "_SpecGlosMap", fbxMaterial, FbxSurfaceMaterial.sSpecular);
+					//ExportTexture(unityMaterial, "_SpecGlosMap", fbxMaterial, FbxSurfaceMaterial.sSpecular);
 				}
 
 				MaterialMap.Add(materialName, fbxMaterial);
