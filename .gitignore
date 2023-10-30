@@ -3,4 +3,5 @@ bin
 obj
 GameData/Craft2FBX/*.dll
 GameData/Craft2FBX/*.pdb
+GameData/Craft2FBX/Models
 *.csproj.user

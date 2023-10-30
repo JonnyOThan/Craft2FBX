@@ -364,53 +364,58 @@ namespace Autodesk.Fbx.Examples
 					int fileFormat = fbxManager.GetIOPluginRegistry().FindWriterIDByDescription("FBX binary (*.fbx)");
 					bool status = fbxExporter.Initialize(fileName, fileFormat, fbxManager.GetIOSettings());
 					// Check that initialization of the fbxExporter was successful
-					if (!status)
-						return 0;
-
-					// Set compatibility to 2014
-					fbxExporter.SetFileExportVersion("FBX201400");
-
-					// Create a scene
-					var fbxScene = FbxScene.Create(fbxManager, "Scene");
-
-					// set up the scene info
-					FbxDocumentInfo fbxSceneInfo = FbxDocumentInfo.Create(fbxManager, "SceneInfo");
-					fbxSceneInfo.mTitle = Title;
-					fbxSceneInfo.mSubject = Subject;
-					fbxSceneInfo.mAuthor = "Unity Technologies";
-					fbxSceneInfo.mRevision = "1.0";
-					fbxSceneInfo.mKeywords = Keywords;
-					fbxSceneInfo.mComment = Comments;
-					fbxScene.SetSceneInfo(fbxSceneInfo);
-
-					// Set up the axes (Y up, Z forward, X to the right) and units (meters)
-					var fbxSettings = fbxScene.GetGlobalSettings();
-					fbxSettings.SetSystemUnit(FbxSystemUnit.m);
-
-					// The Unity axis system has Y up, Z forward, X to the right (left handed system with odd parity).
-					// The Maya axis system has Y up, Z forward, X to the left (right handed system with odd parity).
-					// We need to export right-handed for Maya because ConvertScene can't switch handedness:
-					// https://forums.autodesk.com/t5/fbx-forum/get-confused-with-fbxaxissystem-convertscene/td-p/4265472
-					fbxSettings.SetAxisSystem(FbxAxisSystem.MayaYUp);
-
-					// export set of object
-					FbxNode fbxRootNode = fbxScene.GetRootNode();
-					foreach (var obj in unityExportSet)
+					if (status)
 					{
-						var unityGo = GetGameObject(obj);
+						// Set compatibility to 2014
+						fbxExporter.SetFileExportVersion("FBX201400");
 
-						if (unityGo)
+						// Create a scene
+						var fbxScene = FbxScene.Create(fbxManager, "Scene");
+
+						// set up the scene info
+						FbxDocumentInfo fbxSceneInfo = FbxDocumentInfo.Create(fbxManager, "SceneInfo");
+						fbxSceneInfo.mTitle = Title;
+						fbxSceneInfo.mSubject = Subject;
+						fbxSceneInfo.mAuthor = "Unity Technologies";
+						fbxSceneInfo.mRevision = "1.0";
+						fbxSceneInfo.mKeywords = Keywords;
+						fbxSceneInfo.mComment = Comments;
+						fbxScene.SetSceneInfo(fbxSceneInfo);
+
+						// Set up the axes (Y up, Z forward, X to the right) and units (meters)
+						var fbxSettings = fbxScene.GetGlobalSettings();
+						fbxSettings.SetSystemUnit(FbxSystemUnit.m);
+
+						// The Unity axis system has Y up, Z forward, X to the right (left handed system with odd parity).
+						// The Maya axis system has Y up, Z forward, X to the left (right handed system with odd parity).
+						// We need to export right-handed for Maya because ConvertScene can't switch handedness:
+						// https://forums.autodesk.com/t5/fbx-forum/get-confused-with-fbxaxissystem-convertscene/td-p/4265472
+						fbxSettings.SetAxisSystem(FbxAxisSystem.MayaYUp);
+
+						// export set of object
+						FbxNode fbxRootNode = fbxScene.GetRootNode();
+						foreach (var obj in unityExportSet)
 						{
-							this.ExportComponents(unityGo, fbxScene, fbxRootNode);
+							var unityGo = GetGameObject(obj);
+
+							if (unityGo)
+							{
+								this.ExportComponents(unityGo, fbxScene, fbxRootNode);
+							}
 						}
+
+						// Export the scene to the file.
+						status = fbxExporter.Export(fbxScene);
+
+						if (!status)
+						{
+							Debug.LogError(fbxExporter.GetStatus().GetErrorString());
+						}
+
+						// cleanup
+						fbxScene.Destroy();
+						fbxExporter.Destroy();
 					}
-
-					// Export the scene to the file.
-					status = fbxExporter.Export(fbxScene);
-
-					// cleanup
-					fbxScene.Destroy();
-					fbxExporter.Destroy();
 
 					return status == true ? NumNodes : 0;
 				}
