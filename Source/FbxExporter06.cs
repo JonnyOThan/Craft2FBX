@@ -91,9 +91,12 @@ namespace Autodesk.Fbx.Examples
 					FbxLayerElementArray fbxIndexArray = fbxLayerElement.GetIndexArray();
 					fbxIndexArray.SetCount(unityTriangles.Length);
 
-					for (int i = 0, n = unityTriangles.Length; i < n; ++i)
+					// swap vertex order to match the triangles (swapped for winding)
+					for (int f = 0; f < unityTriangles.Length / 3; f++)
 					{
-						fbxIndexArray.SetAt(i, unityTriangles[i]);
+						fbxIndexArray.SetAt(f * 3 + 0, unityTriangles[f * 3 + 2]);
+						fbxIndexArray.SetAt(f * 3 + 1, unityTriangles[f * 3 + 1]);
+						fbxIndexArray.SetAt(f * 3 + 2, unityTriangles[f * 3 + 0]);
 					}
 					fbxLayer.SetUVs(fbxLayerElement, FbxLayerElement.EType.eTextureDiffuse);
 				}
