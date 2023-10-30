@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
-
+using static Autodesk.Fbx.Examples.Editor.FbxExporter06;
+using System;
 
 namespace Autodesk.Fbx.Examples
 {
@@ -59,48 +60,7 @@ namespace Autodesk.Fbx.Examples
 			/// </summary>
 			Dictionary<string, FbxTexture> TextureMap = new Dictionary<string, FbxTexture>();
 
-			/// <summary>
-			/// Export the mesh's UVs using layer 0.
-			/// </summary>
-			public void ExportUVs(MeshInfo mesh, FbxMesh fbxMesh)
-			{
-				// Set the normals on Layer 0.
-				FbxLayer fbxLayer = fbxMesh.GetLayer(0 /* default layer */);
-				if (fbxLayer == null)
-				{
-					fbxMesh.CreateLayer();
-					fbxLayer = fbxMesh.GetLayer(0 /* default layer */);
-				}
-
-				using (var fbxLayerElement = FbxLayerElementUV.Create(fbxMesh, "UVSet"))
-				{
-					fbxLayerElement.SetMappingMode(FbxLayerElement.EMappingMode.eByPolygonVertex);
-					fbxLayerElement.SetReferenceMode(FbxLayerElement.EReferenceMode.eIndexToDirect);
-
-					// set texture coordinates per vertex
-					FbxLayerElementArray fbxElementArray = fbxLayerElement.GetDirectArray();
-
-					for (int n = 0; n < mesh.UV.Length; n++)
-					{
-						fbxElementArray.Add(new FbxVector2(mesh.UV[n][0],
-														  mesh.UV[n][1]));
-					}
-
-					// For each face index, point to a texture uv
-					var unityTriangles = mesh.Triangles;
-					FbxLayerElementArray fbxIndexArray = fbxLayerElement.GetIndexArray();
-					fbxIndexArray.SetCount(unityTriangles.Length);
-
-					// swap vertex order to match the triangles (swapped for winding)
-					for (int f = 0; f < unityTriangles.Length / 3; f++)
-					{
-						fbxIndexArray.SetAt(f * 3 + 0, unityTriangles[f * 3 + 2]);
-						fbxIndexArray.SetAt(f * 3 + 1, unityTriangles[f * 3 + 1]);
-						fbxIndexArray.SetAt(f * 3 + 2, unityTriangles[f * 3 + 0]);
-					}
-					fbxLayer.SetUVs(fbxLayerElement, FbxLayerElement.EType.eTextureDiffuse);
-				}
-			}
+			Dictionary<Mesh, FbxMesh> MeshMap = new Dictionary<Mesh, FbxMesh>();
 
 			/// <summary>
 			/// Export an Unity Texture
@@ -198,6 +158,96 @@ namespace Autodesk.Fbx.Examples
 				return fbxMaterial;
 			}
 
+			List<Vector3> vertexBuffer = new List<Vector3>();
+			List<int> indexBuffer = new List<int>();
+			List<Vector2> texCoordBuffer = new List<Vector2>();
+
+			public FbxMesh ExportMesh(Mesh mesh, FbxManager fbxManager)
+			{
+				if (MeshMap.TryGetValue(mesh, out var fbxMesh))
+				{
+					return fbxMesh;
+				}
+
+				NumMeshes++;
+				NumTriangles += mesh.triangles.Length / 3;
+				NumVertices += mesh.vertexCount;
+
+				fbxMesh = FbxMesh.Create(fbxManager, mesh.name);
+
+				// Create control points.
+				int NumControlPoints = mesh.vertexCount;
+
+				fbxMesh.InitControlPoints(NumControlPoints);
+
+				mesh.GetVertices(vertexBuffer);
+				mesh.GetTriangles(indexBuffer, 0);
+
+				// copy control point data from Unity to FBX
+				for (int v = 0; v < NumControlPoints; v++)
+				{
+					// convert from left to right-handed by negating x (Unity negates x again on import)
+					fbxMesh.SetControlPointAt(new FbxVector4(-vertexBuffer[v].x, vertexBuffer[v].y, vertexBuffer[v].z), v);
+				}
+
+				// Export UVs
+				{
+					// Set the normals on Layer 0.
+					FbxLayer fbxLayer = fbxMesh.GetLayer(0 /* default layer */);
+					if (fbxLayer == null)
+					{
+						fbxMesh.CreateLayer();
+						fbxLayer = fbxMesh.GetLayer(0 /* default layer */);
+					}
+
+					using (var fbxLayerElement = FbxLayerElementUV.Create(fbxMesh, "UVSet"))
+					{
+						fbxLayerElement.SetMappingMode(FbxLayerElement.EMappingMode.eByPolygonVertex);
+						fbxLayerElement.SetReferenceMode(FbxLayerElement.EReferenceMode.eIndexToDirect);
+
+						mesh.GetUVs(0, texCoordBuffer);
+
+						// set texture coordinates per vertex
+						FbxLayerElementArray fbxElementArray = fbxLayerElement.GetDirectArray();
+
+						for (int n = 0; n < texCoordBuffer.Count; n++)
+						{
+							fbxElementArray.Add(new FbxVector2(texCoordBuffer[n][0],
+															  texCoordBuffer[n][1]));
+						}
+
+						// For each face index, point to a texture uv
+						FbxLayerElementArray fbxIndexArray = fbxLayerElement.GetIndexArray();
+						fbxIndexArray.SetCount(indexBuffer.Count);
+
+						// swap vertex order to match the triangles (swapped for winding)
+						for (int f = 0; f < indexBuffer.Count / 3; f++)
+						{
+							fbxIndexArray.SetAt(f * 3 + 0, indexBuffer[f * 3 + 2]);
+							fbxIndexArray.SetAt(f * 3 + 1, indexBuffer[f * 3 + 1]);
+							fbxIndexArray.SetAt(f * 3 + 2, indexBuffer[f * 3 + 0]);
+						}
+						fbxLayer.SetUVs(fbxLayerElement, FbxLayerElement.EType.eTextureDiffuse);
+					}
+				}
+
+				/* Triangles have to be added in reverse order, 
+                 * or else they will be inverted on import 
+                 * (due to the conversion from left to right handed coords)
+                 */
+				for (int f = 0; f < indexBuffer.Count / 3; f++)
+				{
+					fbxMesh.BeginPolygon();
+					fbxMesh.AddPolygon(indexBuffer[3 * f + 2]);
+					fbxMesh.AddPolygon(indexBuffer[3 * f + 1]);
+					fbxMesh.AddPolygon(indexBuffer[3 * f]);
+					fbxMesh.EndPolygon();
+				}
+
+				MeshMap[mesh] = fbxMesh;
+				return fbxMesh;
+			}
+
 			/// <summary>
 			/// Unconditionally export this mesh object to the file.
 			/// We have decided; this mesh is definitely getting exported.
@@ -207,44 +257,12 @@ namespace Autodesk.Fbx.Examples
 				if (!meshInfo.IsValid )
 					return;
 
-				NumMeshes++;
-				NumTriangles += meshInfo.Triangles.Length / 3;
-				NumVertices += meshInfo.VertexCount;
-
-				// create the mesh structure.
-				FbxMesh fbxMesh = FbxMesh.Create(fbxScene, "Scene");
-
-				// Create control points.
-				int NumControlPoints = meshInfo.VertexCount;
-
-				fbxMesh.InitControlPoints(NumControlPoints);
-
-				// copy control point data from Unity to FBX
-				for (int v = 0; v < NumControlPoints; v++)
-				{
-					// convert from left to right-handed by negating x (Unity negates x again on import)
-					fbxMesh.SetControlPointAt(new FbxVector4(-meshInfo.Vertices[v].x, meshInfo.Vertices[v].y, meshInfo.Vertices[v].z), v);
-				}
-
-				ExportUVs(meshInfo, fbxMesh);
+				var fbxMesh = ExportMesh(meshInfo.mesh, fbxScene.GetFbxManager());
 
 				if (meshInfo.Material)
 				{
 					var fbxMaterial = ExportMaterial(meshInfo.Material, fbxScene);
 					fbxNode.AddMaterial(fbxMaterial);
-				}
-
-				/* Triangles have to be added in reverse order, 
-                 * or else they will be inverted on import 
-                 * (due to the conversion from left to right handed coords)
-                 */
-				for (int f = 0; f < meshInfo.Triangles.Length / 3; f++)
-				{
-					fbxMesh.BeginPolygon();
-					fbxMesh.AddPolygon(meshInfo.Triangles[3 * f + 2]);
-					fbxMesh.AddPolygon(meshInfo.Triangles[3 * f + 1]);
-					fbxMesh.AddPolygon(meshInfo.Triangles[3 * f]);
-					fbxMesh.EndPolygon();
 				}
 
 				// set the fbxNode containing the mesh
@@ -434,25 +452,6 @@ namespace Autodesk.Fbx.Examples
 				public int VertexCount { get { return mesh.vertexCount; } }
 
 				/// <summary>
-				/// Gets the triangles. Each triangle is represented as 3 indices from the vertices array.
-				/// Ex: if triangles = [3,4,2], then we have one triangle with vertices vertices[3], vertices[4], and vertices[2]
-				/// </summary>
-				/// <value>The triangles.</value>
-				public int[] Triangles { get { return mesh.triangles; } }
-
-				/// <summary>
-				/// Gets the vertices, represented in local coordinates.
-				/// </summary>
-				/// <value>The vertices.</value>
-				public Vector3[] Vertices { get { return mesh.vertices; } }
-
-				/// <summary>
-				/// Gets the normals for the vertices.
-				/// </summary>
-				/// <value>The normals.</value>
-				public Vector3[] Normals { get { return mesh.normals; } }
-
-				/// <summary>
 				/// TODO: Gets the binormals for the vertices.
 				/// </summary>
 				/// <value>The normals.</value>
@@ -477,24 +476,6 @@ namespace Autodesk.Fbx.Examples
 						return m_Binormals;
 					}
 				}
-
-				/// <summary>
-				/// TODO: Gets the tangents for the vertices.
-				/// </summary>
-				/// <value>The tangents.</value>
-				public Vector4[] Tangents { get { return mesh.tangents; } }
-
-				/// <summary>
-				/// TODO: Gets the tangents for the vertices.
-				/// </summary>
-				/// <value>The tangents.</value>
-				public Color[] VertexColors { get { return mesh.colors; } }
-
-				/// <summary>
-				/// Gets the uvs.
-				/// </summary>
-				/// <value>The uv.</value>
-				public Vector2[] UV { get { return mesh.uv; } }
 
 				/// <summary>
 				/// The material used, if any; otherwise null.
@@ -542,7 +523,7 @@ namespace Autodesk.Fbx.Examples
 			/// <summary>
 			/// Get the GameObject
 			/// </summary>
-			private GameObject GetGameObject(Object obj)
+			private GameObject GetGameObject(UnityEngine.Object obj)
 			{
 				if (obj is UnityEngine.Transform)
 				{
