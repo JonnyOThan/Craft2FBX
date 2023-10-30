@@ -92,9 +92,9 @@ namespace Autodesk.Fbx.Examples
 				// Find or create an fbx texture and link it up to the fbx material.
 				if (!TextureMap.ContainsKey(textureSourceFullPath))
 				{
-					var fbxTexture = FbxFileTexture.Create(fbxMaterial, fbxPropName + "_Texture");
+					var fbxTexture = FbxFileTexture.Create(fbxMaterial, unityTexture.name);
 					fbxTexture.SetFileName(textureSourceFullPath);
-					fbxTexture.SetTextureUse(FbxTexture.ETextureUse.eStandard);
+					fbxTexture.SetTextureUse(unityPropName == "_BumpMap" ? FbxTexture.ETextureUse.eBumpNormalMap : FbxTexture.ETextureUse.eStandard);
 					fbxTexture.SetMappingType(FbxTexture.EMappingType.eUV);
 					if (textureSourceFullPath.EndsWith(".dds", StringComparison.InvariantCultureIgnoreCase))
 					{
@@ -165,6 +165,7 @@ namespace Autodesk.Fbx.Examples
 			List<Vector3> vertexBuffer = new List<Vector3>();
 			List<int> indexBuffer = new List<int>();
 			List<Vector2> texCoordBuffer = new List<Vector2>();
+			List<Vector3> normalBuffer = new List<Vector3>();
 
 			public FbxMesh ExportMesh(Mesh mesh, FbxManager fbxManager)
 			{
@@ -194,7 +195,7 @@ namespace Autodesk.Fbx.Examples
 					fbxMesh.SetControlPointAt(new FbxVector4(-vertexBuffer[v].x, vertexBuffer[v].y, vertexBuffer[v].z), v);
 				}
 
-				// Export UVs
+				// Export UVs & Normals
 				{
 					// Set the normals on Layer 0.
 					FbxLayer fbxLayer = fbxMesh.GetLayer(0 /* default layer */);
@@ -204,34 +205,43 @@ namespace Autodesk.Fbx.Examples
 						fbxLayer = fbxMesh.GetLayer(0 /* default layer */);
 					}
 
+					// export UVs
 					using (var fbxLayerElement = FbxLayerElementUV.Create(fbxMesh, "UVSet"))
 					{
-						fbxLayerElement.SetMappingMode(FbxLayerElement.EMappingMode.eByPolygonVertex);
-						fbxLayerElement.SetReferenceMode(FbxLayerElement.EReferenceMode.eIndexToDirect);
+						fbxLayerElement.SetMappingMode(FbxLayerElement.EMappingMode.eByControlPoint);
 
 						mesh.GetUVs(0, texCoordBuffer);
 
 						// set texture coordinates per vertex
 						FbxLayerElementArray fbxElementArray = fbxLayerElement.GetDirectArray();
+						fbxElementArray.SetCount(texCoordBuffer.Count);
 
 						for (int n = 0; n < texCoordBuffer.Count; n++)
 						{
-							fbxElementArray.Add(new FbxVector2(texCoordBuffer[n][0],
+							fbxElementArray.SetAt(n, new FbxVector2(texCoordBuffer[n][0],
 															  texCoordBuffer[n][1]));
 						}
 
-						// For each face index, point to a texture uv
-						FbxLayerElementArray fbxIndexArray = fbxLayerElement.GetIndexArray();
-						fbxIndexArray.SetCount(indexBuffer.Count);
-
-						// swap vertex order to match the triangles (swapped for winding)
-						for (int f = 0; f < indexBuffer.Count / 3; f++)
-						{
-							fbxIndexArray.SetAt(f * 3 + 0, indexBuffer[f * 3 + 2]);
-							fbxIndexArray.SetAt(f * 3 + 1, indexBuffer[f * 3 + 1]);
-							fbxIndexArray.SetAt(f * 3 + 2, indexBuffer[f * 3 + 0]);
-						}
 						fbxLayer.SetUVs(fbxLayerElement, FbxLayerElement.EType.eTextureDiffuse);
+					}
+
+					// export Normals
+					using (var fbxLayerElement = FbxLayerElementNormal.Create(fbxMesh, "Normals"))
+					{
+						fbxLayerElement.SetMappingMode(FbxLayerElement.EMappingMode.eByControlPoint);
+
+						mesh.GetNormals(normalBuffer);
+
+						FbxLayerElementArray fbxNormalArray = fbxLayerElement.GetDirectArray();
+						fbxNormalArray.SetCount(normalBuffer.Count);
+
+						for (int i = 0; i < normalBuffer.Count; ++i)
+						{
+							Vector3 unityNormal = normalBuffer[i];
+							fbxNormalArray.SetAt(i, new FbxVector4(-unityNormal.x, unityNormal.y, unityNormal.z));
+						}
+
+						fbxLayer.SetNormals(fbxLayerElement);
 					}
 				}
 
