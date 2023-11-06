@@ -201,8 +201,7 @@ namespace Autodesk.Fbx.Examples
 				// copy control point data from Unity to FBX
 				for (int v = 0; v < NumControlPoints; v++)
 				{
-					// convert from left to right-handed by negating x (Unity negates x again on import)
-					fbxMesh.SetControlPointAt(new FbxVector4(-vertexBuffer[v].x, vertexBuffer[v].y, vertexBuffer[v].z), v);
+					fbxMesh.SetControlPointAt(new FbxVector4(vertexBuffer[v].x, vertexBuffer[v].y, vertexBuffer[v].z), v);
 				}
 
 				// Export UVs & Normals
@@ -248,23 +247,19 @@ namespace Autodesk.Fbx.Examples
 						for (int i = 0; i < normalBuffer.Count; ++i)
 						{
 							Vector3 unityNormal = normalBuffer[i];
-							fbxNormalArray.SetAt(i, new FbxVector4(-unityNormal.x, unityNormal.y, unityNormal.z));
+							fbxNormalArray.SetAt(i, new FbxVector4(unityNormal.x, unityNormal.y, unityNormal.z));
 						}
 
 						fbxLayer.SetNormals(fbxLayerElement);
 					}
 				}
 
-				/* Triangles have to be added in reverse order, 
-                 * or else they will be inverted on import 
-                 * (due to the conversion from left to right handed coords)
-                 */
 				for (int f = 0; f < indexBuffer.Count / 3; f++)
 				{
 					fbxMesh.BeginPolygon();
-					fbxMesh.AddPolygon(indexBuffer[3 * f + 2]);
-					fbxMesh.AddPolygon(indexBuffer[3 * f + 1]);
 					fbxMesh.AddPolygon(indexBuffer[3 * f]);
+					fbxMesh.AddPolygon(indexBuffer[3 * f + 1]);
+					fbxMesh.AddPolygon(indexBuffer[3 * f + 2]);
 					fbxMesh.EndPolygon();
 				}
 
@@ -303,10 +298,8 @@ namespace Autodesk.Fbx.Examples
 				UnityEngine.Vector3 unityScale = unityTransform.localScale;
 
 				// transfer transform data from Unity to Fbx
-				// Negating the x value of the translation, and the y and z values of the rotation
-				// to convert from Unity to Maya coordinates (left to righthanded)
-				var fbxTranslate = new FbxDouble3(-unityTranslate.x, unityTranslate.y, unityTranslate.z);
-				var fbxRotate = new FbxDouble3(unityRotate.x, -unityRotate.y, -unityRotate.z);
+				var fbxTranslate = new FbxDouble3(unityTranslate.x, unityTranslate.y, unityTranslate.z);
+				var fbxRotate = new FbxDouble3(unityRotate.x, unityRotate.y, unityRotate.z);
 				var fbxScale = new FbxDouble3(unityScale.x, unityScale.y, unityScale.z);
 
 				// set the local position of fbxNode
@@ -390,10 +383,7 @@ namespace Autodesk.Fbx.Examples
 						fbxSettings.SetSystemUnit(FbxSystemUnit.m);
 
 						// The Unity axis system has Y up, Z forward, X to the right (left handed system with odd parity).
-						// The Maya axis system has Y up, Z forward, X to the left (right handed system with odd parity).
-						// We need to export right-handed for Maya because ConvertScene can't switch handedness:
-						// https://forums.autodesk.com/t5/fbx-forum/get-confused-with-fbxaxissystem-convertscene/td-p/4265472
-						fbxSettings.SetAxisSystem(FbxAxisSystem.MayaYUp);
+						fbxSettings.SetAxisSystem(new FbxAxisSystem(FbxAxisSystem.EUpVector.eYAxis, FbxAxisSystem.EFrontVector.eParityOdd, FbxAxisSystem.ECoordSystem.eLeftHanded));
 
 						// export set of object
 						FbxNode fbxRootNode = fbxScene.GetRootNode();
