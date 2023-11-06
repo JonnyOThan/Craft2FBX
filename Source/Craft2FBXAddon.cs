@@ -16,6 +16,7 @@ namespace Craft2FBX
 		{
 			var iconTexture = GameDatabase.Instance.GetTexture("Craft2FBX/icon", false);
 			toolbarButton = ApplicationLauncher.Instance.AddModApplication(ToolbarClick, ToolbarClick, null, null, null, null, ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.VAB | ApplicationLauncher.AppScenes.SPH, iconTexture);
+			modRootPath = Path.Combine(KSPUtil.ApplicationRootPath, "GameData", "Craft2FBX");
 		}
 
 		void OnDestroy()
