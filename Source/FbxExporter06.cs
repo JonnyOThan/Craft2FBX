@@ -585,6 +585,18 @@ namespace Autodesk.Fbx.Examples
 						{
 							mesh = new Mesh();
 							renderer.BakeMesh(mesh);
+
+							mesh.GetVertices(vertexBuffer);
+
+							Matrix4x4 xform = Matrix4x4.Scale(renderer.transform.lossyScale).inverse;
+
+							for (int i = 0; i <  vertexBuffer.Count; i++)
+							{
+								vertexBuffer[i] = xform * vertexBuffer[i];
+							}
+
+							// todo: normals?
+							mesh.SetVertices(vertexBuffer);
 						}
 					}
 				}
