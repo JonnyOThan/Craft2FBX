@@ -289,9 +289,92 @@ namespace Autodesk.Fbx.Examples
 				fbxNode.SetShadingMode(FbxNode.EShadingMode.eWireFrame);
 			}
 
-			// get a fbxNode's global default position.
-			protected void ExportTransform(UnityEngine.Transform unityTransform, FbxNode fbxNode)
+			static int rotationOrder = 0;
+
+			enum RotSeq
 			{
+				zyx, zxy, yxz, yzx, xyz, xzy
+			};
+
+			Vector3 twoaxisrot(float r11, float r12, float r21, float r31, float r32)
+			{
+				Vector3 ret = new Vector3();
+				ret.x = Mathf.Atan2(r11, r12);
+				ret.y = Mathf.Acos(r21);
+				ret.z = Mathf.Atan2(r31, r32);
+				return ret;
+			}
+
+			Vector3 threeaxisrot(float r11, float r12, float r21, float r31, float r32)
+			{
+				Vector3 ret = new Vector3();
+				ret.x = Mathf.Atan2(r31, r32);
+				ret.y = Mathf.Asin(r21);
+				ret.z = Mathf.Atan2(r11, r12);
+				return ret;
+			}
+
+			Vector3 quaternion2Euler(Quaternion q, RotSeq rotSeq)
+			{
+				switch (rotSeq)
+				{
+					case RotSeq.zyx:
+						return threeaxisrot(2 * (q.x * q.y + q.w * q.z),
+							q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z,
+							-2 * (q.x * q.z - q.w * q.y),
+							2 * (q.y * q.z + q.w * q.x),
+							q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+
+
+					case RotSeq.zxy:
+						return threeaxisrot(-2 * (q.x * q.y - q.w * q.z),
+							q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z,
+							2 * (q.y * q.z + q.w * q.x),
+							-2 * (q.x * q.z - q.w * q.y),
+							q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+
+					case RotSeq.yxz:
+						return threeaxisrot(2 * (q.x * q.z + q.w * q.y),
+							q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z,
+							-2 * (q.y * q.z - q.w * q.x),
+							2 * (q.x * q.y + q.w * q.z),
+							q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z);
+
+					case RotSeq.yzx:
+						return threeaxisrot(-2 * (q.x * q.z - q.w * q.y),
+							q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z,
+							2 * (q.x * q.y + q.w * q.z),
+							-2 * (q.y * q.z - q.w * q.x),
+							q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z);
+
+					case RotSeq.xyz:
+						return threeaxisrot(-2 * (q.y * q.z - q.w * q.x),
+							q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z,
+							2 * (q.x * q.z + q.w * q.y),
+							-2 * (q.x * q.y - q.w * q.z),
+							q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
+
+					case RotSeq.xzy:
+						return threeaxisrot(2 * (q.y * q.z + q.w * q.x),
+							q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z,
+							-2 * (q.x * q.y - q.w * q.z),
+							2 * (q.x * q.z + q.w * q.y),
+							q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
+
+					default:
+						Debug.LogError("No good sequence");
+						return Vector3.zero;
+
+				}
+
+			}
+
+			// get a fbxNode's global default position.
+			protected FbxNode ExportTransform(UnityEngine.Transform unityTransform, FbxScene fbxScene, FbxNode fbxNodeParent)
+			{
+				FbxNode fbxNode = FbxNode.Create(fbxScene, unityTransform.name);
+				fbxNodeParent.AddChild(fbxNode);
+
 				// get local position of fbxNode (from Unity)
 				UnityEngine.Vector3 unityTranslate = unityTransform.localPosition;
 				UnityEngine.Vector3 unityRotate = unityTransform.localRotation.eulerAngles;
@@ -299,7 +382,7 @@ namespace Autodesk.Fbx.Examples
 
 				// transfer transform data from Unity to Fbx
 				var fbxTranslate = new FbxDouble3(unityTranslate.x, unityTranslate.y, unityTranslate.z);
-				var fbxRotate = new FbxDouble3(unityRotate.x, unityRotate.y, unityRotate.z);
+				var fbxRotate = new FbxDouble3(0, unityRotate.y, 0);
 				var fbxScale = new FbxDouble3(unityScale.x, unityScale.y, unityScale.z);
 
 				// set the local position of fbxNode
@@ -307,7 +390,16 @@ namespace Autodesk.Fbx.Examples
 				fbxNode.LclRotation.Set(fbxRotate);
 				fbxNode.LclScaling.Set(fbxScale);
 
-				return;
+
+				var yNode = FbxNode.Create(fbxScene, "y");
+				fbxNode.AddChild(yNode);
+				yNode.LclRotation.Set(new FbxDouble3(unityRotate.x, 0, 0));
+
+				var zNode = FbxNode.Create(fbxScene, "z");
+				yNode.AddChild(zNode);
+				zNode.LclRotation.Set(new FbxDouble3(0, 0, unityRotate.z));
+
+				return zNode;
 			}
 
 			/// <summary>
@@ -316,16 +408,13 @@ namespace Autodesk.Fbx.Examples
 			protected void ExportComponents(GameObject unityGo, FbxScene fbxScene, FbxNode fbxNodeParent)
 			{
 				// create an FbxNode and add it as a child of parent
-				FbxNode fbxNode = FbxNode.Create(fbxScene, unityGo.name);
+				FbxNode fbxNode = ExportTransform(unityGo.transform, fbxScene, fbxNodeParent);
 				NumNodes++;
-
-				ExportTransform(unityGo.transform, fbxNode);
+				
 				ExportMesh(GetMeshInfo(unityGo), fbxNode, fbxScene);
 
 				if (Verbose)
 					Debug.Log(string.Format("exporting {0}", fbxNode.GetName()));
-
-				fbxNodeParent.AddChild(fbxNode);
 
 				// now  unityGo  through our children and recurse
 				foreach (Transform childT in unityGo.transform)
