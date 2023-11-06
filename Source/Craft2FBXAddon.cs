@@ -16,13 +16,6 @@ namespace Craft2FBX
 		{
 			var iconTexture = GameDatabase.Instance.GetTexture("Craft2FBX/icon", false);
 			toolbarButton = ApplicationLauncher.Instance.AddModApplication(ToolbarClick, ToolbarClick, null, null, null, null, ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.VAB | ApplicationLauncher.AppScenes.SPH, iconTexture);
-
-			modRootPath = Path.Combine(KSPUtil.ApplicationRootPath, "GameData", "Craft2FBX");
-			var dllDir = Path.Combine(modRootPath, "PluginData");
-			if (!SetDllDirectory(dllDir))
-			{
-				throw new Exception("SetDllDirectory failed");
-			}
 		}
 
 		void OnDestroy()
@@ -58,14 +51,6 @@ namespace Craft2FBX
 				}
 			}
 		}
-
-		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool SetDllDirectory(string lpPathName);
-
-		[DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-		private static extern IntPtr LoadLibrary(
-			[MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
 	}
 }
