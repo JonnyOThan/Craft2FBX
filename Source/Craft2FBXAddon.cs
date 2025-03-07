@@ -40,19 +40,23 @@ namespace Craft2FBX
 
 		private void ToolbarClick()
 		{
-			using (var exporter = Autodesk.Fbx.Examples.Editor.FbxExporter06.Create())
-			{
-				GetCraftExportSettings(out Part rootPart, out string name);
+			GetCraftExportSettings(out Part rootPart, out string name);
 
-				if (rootPart != null)
-				{
-					var modelsDirectory = Path.Combine(modRootPath, "Models");
-					Directory.CreateDirectory(modelsDirectory);
-					exporter.ExportAll(new[] { rootPart.gameObject }, Path.ChangeExtension(Path.Combine(modelsDirectory, name), "fbx"));
-				}
+			if (rootPart != null)
+			{
+				var modelsDirectory = Path.Combine(modRootPath, "Models");
+				Directory.CreateDirectory(modelsDirectory);
+				ExportGameObject(rootPart.gameObject, Path.ChangeExtension(Path.Combine(modRootPath, "Models", name), "fbx"));
 			}
 		}
 
+		public static void ExportGameObject(GameObject gameObject, string path)
+		{
+			using (var exporter = Autodesk.Fbx.Examples.Editor.FbxExporter06.Create())
+			{
+				exporter.ExportAll(new[] { gameObject }, path);
+			}
+		}
 	}
 }
 
