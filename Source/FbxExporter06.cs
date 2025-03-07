@@ -273,7 +273,7 @@ namespace Autodesk.Fbx.Examples
 			/// </summary>
 			public void ExportMesh(MeshInfo meshInfo, FbxNode fbxNode, FbxScene fbxScene)
 			{
-				if (!meshInfo.IsValid )
+				if (!meshInfo.IsValid || !meshInfo.mesh.isReadable)
 					return;
 
 				var fbxMesh = ExportMesh(meshInfo.mesh, fbxScene.GetFbxManager());
